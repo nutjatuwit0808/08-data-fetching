@@ -3,11 +3,12 @@ import path from "path";
 import fs from "fs/promises";
 
 function ProductDetailPage(props) {
+  console.log("ProductDetailPage")
   const { loadedProduct } = props;
 
-    // if(!loadedProduct) {
-    //   return <p>Loading...</p>
-    // }
+  if (!loadedProduct) {
+    return <p>Loading...</p>;
+  }
   return (
     <>
       <h1>{loadedProduct.title}</h1>
@@ -24,6 +25,7 @@ async function getData() {
 }
 
 export async function getStaticProps(context) {
+  console.log("getStaticProps")
   const { params } = context;
 
   const productId = params.pid;
@@ -32,6 +34,11 @@ export async function getStaticProps(context) {
 
   const product = data.products.find((product) => product.id === productId);
 
+  if (!product) {
+    return {
+      notFound: true,
+    };
+  }
   return {
     props: {
       loadedProduct: product,
@@ -39,13 +46,15 @@ export async function getStaticProps(context) {
   };
 }
 
+//If has more than one page like [pid] need to use getStaticPaths to pre-generate all pages
 export async function getStaticPaths() {
+  console.log("getStaticPaths")
   const data = await getData();
   const ids = data.products.map((product) => product.id);
   const pathsWithParams = ids.map((id) => ({ params: { pid: id } }));
   return {
     paths: pathsWithParams, //[{params: {pid: "p1"}}],
-    fallback: false//"blocking",
+    fallback: true, //"blocking",
   };
 }
 
